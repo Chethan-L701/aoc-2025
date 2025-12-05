@@ -1,3 +1,5 @@
+#![allow(clippy::needless_return)]
+
 mod utils {
     use std::fs;
     pub fn read_file_lines(path: &str) -> Vec<String> {
@@ -20,10 +22,10 @@ pub mod day1 {
             let mut password = 0;
 
             for l in data {
-                let direc = l.chars().nth(0).unwrap();
+                let direction = l.chars().nth(0).unwrap();
                 let times: i32 = l[1..].parse().unwrap();
 
-                match direc {
+                match direction {
                     'L' => {
                         dial = (dial - times) % 100;
                         if dial < 0 {
@@ -44,7 +46,7 @@ pub mod day1 {
 
                 println!(
                     "{{direction : {}, times : {}, current_pos: {} }}",
-                    direc, times, dial
+                    direction, times, dial
                 );
             }
 
@@ -60,7 +62,7 @@ pub mod day1 {
             let mut password = 0;
 
             for l in data {
-                let direc = l.chars().nth(0).unwrap();
+                let direction = l.chars().nth(0).unwrap();
                 let mut times: i32 = l[1..].parse().unwrap();
 
                 let rev: i32 = times / 100;
@@ -69,7 +71,7 @@ pub mod day1 {
 
                 let mut across_zero: bool = false;
 
-                match direc {
+                match direction {
                     'L' => {
                         let pre_turn = dial;
                         dial = (dial - times) % 100;
@@ -98,7 +100,7 @@ pub mod day1 {
 
                 println!(
                     "{{direction : {}, times : {}, rev : {}, current_pos: {}, across_zero : {} }}",
-                    direc, times, rev, dial, across_zero
+                    direction, times, rev, dial, across_zero
                 );
             }
             println!("password : {}", password);
@@ -110,7 +112,7 @@ pub mod day2 {
     pub mod part1 {
         use crate::challenges::utils;
 
-        pub fn is_validid(id: i64) -> bool {
+        pub fn is_valid_id(id: i64) -> bool {
             let id = id.to_string();
             if utils::is_even(id.len() as i32) {
                 let mid = id.len() / 2;
@@ -138,8 +140,8 @@ pub mod day2 {
             for bound in bounds {
                 println!("{{ first_id : {}, last_id : {} }}", bound.0, bound.1);
                 for id in bound.0..=bound.1 {
-                    if !is_validid(id) {
-                        invalid_id_sum += id as i64;
+                    if !is_valid_id(id) {
+                        invalid_id_sum += id;
                     }
                 }
             }
@@ -150,13 +152,13 @@ pub mod day2 {
         use crate::challenges::utils;
         fn is_repeated(id: &String, step: usize) -> bool {
             let parts: Vec<char> = id.chars().collect();
-            let parts_chuncks: Vec<Vec<char>> = parts.chunks(step).map(|v| v.to_vec()).collect();
-            let parts_strs: Vec<String> = parts_chuncks
+            let parts_chunks: Vec<Vec<char>> = parts.chunks(step).map(|v| v.to_vec()).collect();
+            let parts_slices: Vec<String> = parts_chunks
                 .iter()
                 .map(|v| v.iter().fold(String::new(), |acc, c| acc + &c.to_string()))
                 .collect();
-            for i in 0..parts_strs.len() - 1 {
-                if parts_strs[i] != parts_strs[i + 1] {
+            for i in 0..parts_slices.len() - 1 {
+                if parts_slices[i] != parts_slices[i + 1] {
                     return false;
                 }
             }
@@ -164,7 +166,7 @@ pub mod day2 {
             return true;
         }
 
-        fn is_validid(id: i64) -> bool {
+        fn is_valid_id(id: i64) -> bool {
             let id = id.to_string();
             for i in 1..(id.len() / 2) + 1 {
                 if is_repeated(&id, i) {
@@ -191,8 +193,8 @@ pub mod day2 {
             for bound in bounds {
                 println!("{{ first_id : {}, last_id : {} }}", bound.0, bound.1);
                 for id in bound.0..=bound.1 {
-                    if !is_validid(id) {
-                        invalid_id_sum += id as i64;
+                    if !is_valid_id(id) {
+                        invalid_id_sum += id;
                     }
                 }
             }
@@ -268,7 +270,7 @@ pub mod day3 {
                     }
                 }
             }
-            let battery = Battery { val: max, pos: pos };
+            let battery = Battery { val: max, pos };
             return battery;
         }
 
@@ -449,6 +451,113 @@ pub mod day4 {
         pub fn exec() {
             let data = utils::read_file_lines("./data/day4.txt");
             println!("total removables : {}", total_removable(data));
+        }
+    }
+}
+
+pub mod day5 {
+    #[derive(Debug, Copy, Clone)]
+    struct Range {
+        lower: u64,
+        upper: u64,
+    }
+    fn get_ranges(data: Vec<String>) -> Vec<Range> {
+        let mut ranges: Vec<Range> = vec![];
+        for d in data {
+            let r: Vec<&str> = d.split('-').collect();
+            ranges.push(Range {
+                lower: r[0].parse().unwrap(),
+                upper: r[1].parse().unwrap(),
+            });
+        }
+        return ranges;
+    }
+    pub mod part1 {
+        use super::Range;
+        use crate::challenges::utils;
+        use super::get_ranges;
+
+        fn get_ingredients(data: Vec<String>) -> Vec<u64> {
+            let mut ingredients: Vec<u64> = vec![];
+            for d in data {
+                ingredients.push(d.parse().unwrap());
+            }
+            return ingredients;
+        }
+
+        fn get_fresh(ingredients: Vec<u64>, ranges: Vec<Range>) -> u64 {
+            let mut fresh_ingredients: u64 = 0;
+
+            for i in ingredients {
+                for range in &ranges {
+                    if i >= range.lower && i <= range.upper {
+                        fresh_ingredients += 1;
+                        break;
+                    }
+                }
+            }
+
+            return fresh_ingredients;
+        }
+
+        pub fn exec() {
+            let ranges = get_ranges(utils::read_file_lines("./data/day5-ranges.txt"));
+            let ingredients = get_ingredients(utils::read_file_lines("./data/day5-ing.txt"));
+            println!("fresh ingredients : {}", get_fresh(ingredients, ranges));
+        }
+    }
+    pub mod part2 {
+        use super::Range;
+        use crate::challenges::utils;
+        use super::get_ranges;
+
+        use std::cmp::Ordering;
+
+        fn reduce(ranges: Vec<Range>) -> Vec<Range> {
+            let mut reduced: Vec<Range> = vec![];
+            for r in ranges {
+                if let Some(last) = reduced.last_mut() {
+                    if r.lower <= last.upper {
+                        last.upper = last.upper.max(r.upper);
+                    } else {
+                        reduced.push(r);
+                    }
+                } else {
+                    reduced.push(r);
+                }
+            }
+            return reduced;
+        }
+        fn get_total_fresh(ranges: Vec<Range>) -> u64 {
+            let mut fresh_ingredients: u64 = 0;
+
+            for range in &ranges {
+                fresh_ingredients += range.upper  - range.lower + 1;
+            }
+
+            return fresh_ingredients;
+        }
+
+        pub fn exec() {
+            let mut ranges = get_ranges(utils::read_file_lines("./data/day5-ranges.txt"));
+            ranges.sort_by(|a, b| {
+                if a.lower < b.lower {
+                    Ordering::Less
+                } else if a.lower == b.lower {
+                    Ordering::Equal
+                } else {
+                    Ordering::Greater
+                }
+            });
+            for (i, r) in ranges.iter().enumerate() {
+                println!("{{ {} :  {:?}; {} }}", i + 1, r, r.upper - r.lower);
+            }
+            println!("\n\n");
+            let reduced = reduce(ranges);
+            for (i, r) in reduced.iter().enumerate() {
+                println!("{{ {} :  {:?}; {} }}", i + 1, r, r.upper - r.lower);
+            }
+            println!("total fresh ingredients : {}", get_total_fresh(reduced));
         }
     }
 }
