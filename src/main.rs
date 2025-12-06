@@ -17,6 +17,7 @@ fn main() {
         exucution_map.insert("day3", Challenge { part1: challenges::day3::part1::exec, part2: challenges::day3::part2::exec });
         exucution_map.insert("day4", Challenge { part1: challenges::day4::part1::exec, part2: challenges::day4::part2::exec });
         exucution_map.insert("day5", Challenge { part1: challenges::day5::part1::exec, part2: challenges::day5::part2::exec });
+        exucution_map.insert("day6", Challenge { part1: challenges::day6::part1::exec, part2: challenges::day6::part2::exec });
 
         exucution_map
     }

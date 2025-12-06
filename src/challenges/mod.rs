@@ -474,8 +474,8 @@ pub mod day5 {
     }
     pub mod part1 {
         use super::Range;
-        use crate::challenges::utils;
         use super::get_ranges;
+        use crate::challenges::utils;
 
         fn get_ingredients(data: Vec<String>) -> Vec<u64> {
             let mut ingredients: Vec<u64> = vec![];
@@ -508,8 +508,8 @@ pub mod day5 {
     }
     pub mod part2 {
         use super::Range;
-        use crate::challenges::utils;
         use super::get_ranges;
+        use crate::challenges::utils;
 
         use std::cmp::Ordering;
 
@@ -532,7 +532,7 @@ pub mod day5 {
             let mut fresh_ingredients: u64 = 0;
 
             for range in &ranges {
-                fresh_ingredients += range.upper  - range.lower + 1;
+                fresh_ingredients += range.upper - range.lower + 1;
             }
 
             return fresh_ingredients;
@@ -558,6 +558,158 @@ pub mod day5 {
                 println!("{{ {} :  {:?}; {} }}", i + 1, r, r.upper - r.lower);
             }
             println!("total fresh ingredients : {}", get_total_fresh(reduced));
+        }
+    }
+}
+
+pub mod day6 {
+    pub mod part1 {
+        use std::fs;
+
+        fn homework(nums: Vec<Vec<u64>>, ops: Vec<String>) -> Vec<u64> {
+            let mut answers: Vec<u64> = vec![];
+            for i in 0..ops.len() {
+                let mut acc: u64 = if ops[i] == "*" { 1 } else { 0 };
+                match ops[i].as_str() {
+                    "+" => {
+                        for j in 0..nums.len() {
+                            acc += nums[j][i];
+                        }
+                    }
+                    "*" => {
+                        for j in 0..nums.len() {
+                            acc *= nums[j][i];
+                        }
+                    }
+                    _ => {}
+                }
+                answers.push(acc);
+            }
+            return answers;
+        }
+
+        pub fn exec() {
+            let input = fs::read_to_string("./data/day6.txt").unwrap();
+            let mut parts: Vec<String> = input
+                .lines()
+                .map(|x| x.to_string())
+                .filter(|x| x.len() > 0)
+                .collect();
+            println!("{:?}", parts);
+
+            let ops = parts.pop().unwrap();
+            let ops: Vec<String> = ops
+                .trim()
+                .split(' ')
+                .filter(|x| x.len() > 0)
+                .map(|x| x.to_string())
+                .collect();
+            println!("ops : {:?}", ops);
+            let nums: Vec<Vec<u64>> = parts
+                .iter()
+                .filter(|x| x.len() > 0)
+                .map(|x| {
+                    x.trim()
+                        .split(' ')
+                        .filter(|y| y.len() > 0)
+                        .map(|y| y.parse().unwrap())
+                        .collect()
+                })
+                .collect();
+            println!("nums : {:?} \n\n ops : {:?}", nums, ops);
+            let answers = homework(nums, ops);
+            println!(
+                "answers : {:?}\ntotal : {}",
+                answers,
+                answers.iter().fold(0, |acc, x| acc + x)
+            );
+        }
+    }
+    pub mod part2 {
+        use std::{char, fs, vec};
+
+        fn transpose(raw_input: Vec<Vec<char>>) -> Vec<Vec<char>> {
+            let mut transpose_mat: Vec<Vec<char>> = vec![];
+            for i in 1..=raw_input[0].len() {
+                let mut row: Vec<char> = vec![];
+                for j in 0..raw_input.len() {
+                    row.push(raw_input[j][raw_input[0].len() - i]);
+                }
+                transpose_mat.push(row);
+            }
+            return transpose_mat;
+        }
+
+        fn homework(data: Vec<String>) -> Vec<u64> {
+            let mut answers: Vec<u64> = vec![];
+            for line in data {
+                let mut cols: Vec<&str> = line.trim().split(' ').collect();
+                let op = cols.pop().unwrap();
+                match op {
+                    "+" => {
+                        answers.push(
+                            cols.iter()
+                                .map(|x| -> u64 { x.parse().unwrap() })
+                                .fold(0, |acc, x| acc + x),
+                        );
+                    }
+                    "*" => {
+                        answers.push(
+                            cols.iter()
+                                .map(|x| -> u64 { x.parse().unwrap() })
+                                .fold(1, |acc, x| acc * x),
+                        );
+                    }
+                    _ => {}
+                }
+            }
+            return answers;
+        }
+
+        pub fn exec() {
+            let input = fs::read_to_string("./data/day6.txt").unwrap();
+            let raw_input_charwise: Vec<Vec<char>> = input
+                .lines()
+                .filter(|x| x.len() > 0)
+                .map(|x| x.to_string().chars().collect())
+                .collect();
+
+            println!("raw : {:?}", raw_input_charwise);
+            let transpose_mat = transpose(raw_input_charwise);
+            println!("transpose_mat : {:?}", transpose_mat);
+
+            let mut new_data: Vec<String> = vec![];
+            for row in transpose_mat {
+                new_data.push(row.iter().filter(|c| !c.is_whitespace()).fold(
+                    String::new(),
+                    |acc, c| {
+                        if c == &'*' || c == &'+' {
+                            acc + " " + &c.to_string()
+                        } else {
+                            acc + &c.to_string()
+                        }
+                    },
+                ));
+            }
+            println!("new data : {:?}", new_data);
+            let mut new_lines: Vec<String> = vec![];
+            let mut new_line = String::new();
+            for i in 0..new_data.len() {
+                if new_data[i] == "" {
+                    new_lines.push(new_line.clone());
+                    new_line = String::new();
+                }
+
+                new_line = new_line + &new_data[i] + &' '.to_string();
+            }
+            new_lines.push(new_line);
+            println!("new lines : {:?}", new_lines);
+            let answers = homework(new_lines);
+            println!(
+                "answers : {:?}\ntotal : {}",
+                answers,
+                answers.iter().fold(0, |acc, x| acc + x)
+            );
         }
     }
 }
